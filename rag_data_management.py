@@ -2,7 +2,7 @@ from langchain_community.document_loaders import PyPDFLoader, PyPDFDirectoryLoad
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
-
+import shutil
 import os
 
 def load_PDF(path: str) -> list:
@@ -16,17 +16,17 @@ def load_PDF(path: str) -> list:
         documents = loader.load()
     else:
         raise ValueError(f"与えられたパス： '{path}' はファイルでもディレクトリでもありません。")
-    
+
     return documents
 
 def create_chunks(documents: list, chunk_size: int, chunk_overlap: int) -> list:
-    text_splitter = RecursiveTextSplitter(
+    text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
         length_function=len,
         add_start_index=True
     )
-    chunks = text_splitter.split(documents)
+    chunks = text_splitter.split_documents(documents)
     return chunks
 
 def save_chunks_to_database(chunks: list,db_path: str):
@@ -34,12 +34,12 @@ def save_chunks_to_database(chunks: list,db_path: str):
         shutil.rmtree(db_path)
     
     vector_db = Chroma.from_documents(
-        documents=splits,
+        documents=chunks,
         embedding=OpenAIEmbeddings(),
         persist_directory=db_path 
         )
     
-    vector_db.persist()
+    # vector_db.persist()
     
     return vector_db
 
