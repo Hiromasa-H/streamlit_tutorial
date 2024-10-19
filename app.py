@@ -8,7 +8,7 @@ st.title('PDF RAG Chatbot')
 if 'messages' not in st.session_state:
     st.session_state.messages = []
     
-    
+# prepare the data
 if 'data_prepared' not in st.session_state:
     st.session_state.data_prepared = False
     model = ChatOpenAI(model="gpt-4o-mini")   
@@ -45,14 +45,8 @@ if user_prompt := st.chat_input():
 
     prompt = format_prompt(context, user_prompt,st.session_state.messages)
     print(prompt)
-    # ans = model.invoke(prompt)
-    # response = ans.content
-    
-#    model.stream(prompt)
-    
-    # response_chunks = []
+
     with st.chat_message('assistant'):
-        # st.markdown(response)
         response = st.write_stream(model.stream(prompt))
         
     st.session_state.messages.append({'role':'assistant', 'content':response})
