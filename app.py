@@ -45,13 +45,14 @@ if user_prompt := st.chat_input():
 
     prompt = format_prompt(context, user_prompt,st.session_state.messages)
     print(prompt)
-    ans = model.invoke(prompt)
-    response = ans.content
+    # ans = model.invoke(prompt)
+    # response = ans.content
     
-    # chain = prompt | model | StrOutputParser()
+#    model.stream(prompt)
     
     # response_chunks = []
     with st.chat_message('assistant'):
-        st.markdown(response)
+        # st.markdown(response)
+        response = st.write_stream(model.stream(prompt))
         
     st.session_state.messages.append({'role':'assistant', 'content':response})
