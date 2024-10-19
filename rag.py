@@ -53,18 +53,21 @@ def get_context_from_db(vector_db, query):
     context = retriever.invoke(query)
     return context
 
-PROMPT = """
-Answer the following questions based on the given context:
-{CONTEXT}
+def format_prompt(context, query, chat_history):
+    PROMPT = """
+    You are a helpful assistant. Answer the following questions based on the given context:
+    chat history: {CHAT_HISTORY}
 
-Answer the following questions based on the given context:
-{QUERY}
-"""
+    context: {CONTEXT}
 
-def format_prompt(context, query):
+    Answer the following questions based on the given context:
+    query: {QUERY}
+    """
     prompt = ChatPromptTemplate.from_template(PROMPT)
-    prompt = prompt.format(CONTEXT=context, QUERY=query)
+    chat_history = '\n\n'.join([f"{message['role']}: {message['content']}" for message in chat_history])
+    prompt = prompt.format(CHAT_HISTORY=chat_history,CONTEXT=context, QUERY=query)
     return prompt
+    
     
 if __name__ == "__main__":
     

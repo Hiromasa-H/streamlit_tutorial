@@ -2,8 +2,8 @@ import streamlit as st
 from rag import *
 
     
-st.title('PDF RAG Chatbot')
-        
+st.title('PDF RAG Chatbot')        
+
 # initalize chat history
 if 'messages' not in st.session_state:
     st.session_state.messages = []
@@ -42,11 +42,15 @@ if user_prompt := st.chat_input():
     st.session_state.messages.append({'role':'user', 'content':user_prompt})
     
     context = get_context_from_db(vector_db, user_prompt) 
-    prompt = format_prompt(context, user_prompt)
+
+    prompt = format_prompt(context, user_prompt,st.session_state.messages)
+    print(prompt)
     ans = model.invoke(prompt)
-    
     response = ans.content
     
+    # chain = prompt | model | StrOutputParser()
+    
+    # response_chunks = []
     with st.chat_message('assistant'):
         st.markdown(response)
         
