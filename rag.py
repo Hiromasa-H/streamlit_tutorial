@@ -24,6 +24,8 @@ def load_PDF(path: str) -> List[Document]:
         documents = loader.load()
     else:
         raise ValueError(f"与えられたパス： '{path}' はファイルでもディレクトリでもありません。")
+    if not documents:
+        raise ValueError(f"与えられたパス： '{path}' からのファイルの読み込みに失敗しました。")
     return documents
 
 def create_chunks(documents: List[Document], chunk_size: int, chunk_overlap: int) -> List[Document]:
