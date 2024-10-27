@@ -67,6 +67,7 @@ def format_prompt(contexts:List[Document], query:str, chat_history:List[Dict[str
     """
     prompt = ChatPromptTemplate.from_template(PROMPT)
     chat_history = '\n\n'.join([f"{message['role']}: {message['content']}" for message in chat_history])
+    sources = [ {'source':doc[0].metadata['source'],'page':doc[0].metadata['page']} for doc in contexts ]
     contexts = '\n'.join([f"CONTEXT {idx}:\n{res.page_content}" for idx, (res, _score) in enumerate(contexts)])
     prompt = prompt.format(CHAT_HISTORY=chat_history,CONTEXT=contexts, QUERY=query)
-    return prompt
+    return prompt, sources

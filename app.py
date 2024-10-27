@@ -40,9 +40,10 @@ if user_prompt := st.chat_input():
     st.session_state.messages.append({'role':'user', 'content':user_prompt})
     
     context = get_context_from_db(st.session_state.vector_db, user_prompt) 
-    prompt = format_prompt(context, user_prompt,st.session_state.messages)
+    prompt,sources = format_prompt(context, user_prompt,st.session_state.messages)
 
     with st.chat_message('assistant'):
         response = st.write_stream(st.session_state.model.stream(prompt))
-        
+        formatted_sources = '出展：\n' + '\n 1. '.join(f"{source['source']}, {source['page']}ページ" for source in sources)
+        st.markdown(formatted_sources)
     st.session_state.messages.append({'role':'assistant', 'content':response})
