@@ -28,6 +28,7 @@ if len(uploaded_files)!=0:
     msg = 'PDFデータの更新が完了しました。'
     st.session_state.messages.append({'role':'assistant', 'content':msg})
 
+st.write('#### ファイル一覧')
 files_to_remove = []
 if len(os.listdir('documents'))!=0:
     for file_name in os.listdir('documents'):
