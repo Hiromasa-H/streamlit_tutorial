@@ -6,8 +6,14 @@ from langchain_core.prompts import ChatPromptTemplate
 import shutil
 import os
 from langchain_openai import ChatOpenAI
+import chromadb
 
-def load_PDF(path: str) -> list:
+from typing import List, Dict, Any
+from langchain_core.vectorstores import VectorStore
+from langchain_core.documents import Document
+
+
+def load_PDF(path: str) -> List[Document]:
     if os.path.isdir(path):
         loader = PyPDFDirectoryLoader(path, glob="*.pdf")
         documents = loader.load()
@@ -18,10 +24,9 @@ def load_PDF(path: str) -> list:
         documents = loader.load()
     else:
         raise ValueError(f"与えられたパス： '{path}' はファイルでもディレクトリでもありません。")
-
     return documents
 
-def create_chunks(documents: list, chunk_size: int, chunk_overlap: int) -> list:
+def create_chunks(documents: List[Document], chunk_size: int, chunk_overlap: int) -> List[Document]:
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
@@ -31,29 +36,24 @@ def create_chunks(documents: list, chunk_size: int, chunk_overlap: int) -> list:
     chunks = text_splitter.split_documents(documents)
     return chunks
 
-def save_chunks_to_database(chunks: list,db_path: str):
+def init_vector_db(embedding_model:Any,db_path:str)->Chroma:
     if os.path.exists(db_path):
         shutil.rmtree(db_path)
-    
-    vector_db = Chroma.from_documents(
-        documents=chunks,
-        embedding=OpenAIEmbeddings(),
+    chromadb.api.client.SharedSystemClient.clear_system_cache()
+    vector_db = Chroma(
+        collection_name='rag_app_collection',
+        embedding_function=embedding_model,
         persist_directory=db_path 
         )
-    
-    # vector_db.persist()
-    
     return vector_db
 
-def get_context_from_db(vector_db, query):
-    # results = vector_db.similarity_search_with_relevance_score(query,k=3)
-    # context = '\n\n--\n\n'.join([doc.page_content for doc, _score in results])
-    # return context
-    retriever = vector_db.as_retriever()
-    context = retriever.invoke(query)
-    return context
+def get_context_from_db(vector_db:VectorStore, query:str, k:int=5, score_threshold:float=None)->List[Document]:
+    contexts = vector_db.similarity_search_with_relevance_scores(query,
+                                                                 k=k,
+                                                                 score_threshold=score_threshold)
+    return contexts
 
-def format_prompt(context, query, chat_history):
+def format_prompt(contexts:List[Document], query:str, chat_history:List[Dict[str, str]])->str:
     PROMPT = """
     You are a helpful assistant. Answer the following questions based on the given context:
     chat history: {CHAT_HISTORY}
@@ -65,19 +65,6 @@ def format_prompt(context, query, chat_history):
     """
     prompt = ChatPromptTemplate.from_template(PROMPT)
     chat_history = '\n\n'.join([f"{message['role']}: {message['content']}" for message in chat_history])
-    prompt = prompt.format(CHAT_HISTORY=chat_history,CONTEXT=context, QUERY=query)
+    contexts = '\n'.join([f"CONTEXT {idx}:\n{res.page_content}" for idx, (res, _score) in enumerate(contexts)])
+    prompt = prompt.format(CHAT_HISTORY=chat_history,CONTEXT=contexts, QUERY=query)
     return prompt
-    
-    
-if __name__ == "__main__":
-    
-    model = ChatOpenAI(model="gpt-4o-mini")   
-    
-    documents = load_PDF("documents")
-    chunks = create_chunks(documents, chunk_size=500, chunk_overlap=100)
-    vector_db = save_chunks_to_database(chunks, "database")
-    query = 'what is this paper about? what are the main contributions?'
-    context = get_context_from_db(vector_db, query) 
-    prompt = format_prompt(context, query)
-    ans = model.invoke(prompt)
-    print(ans)
