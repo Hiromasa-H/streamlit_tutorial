@@ -44,6 +44,7 @@ if user_prompt := st.chat_input():
 
     with st.chat_message('assistant'):
         response = st.write_stream(st.session_state.model.stream(prompt))
-        formatted_sources = '出展：\n' + '\n 1. '.join(f"{source['source']}, {source['page']}ページ" for source in sources)
+        formatted_sources = '参考文献：\n' 
+        formatted_sources += '\n '.join(f"{idx+1}. {source['source']}, {source['page']}ページ" for idx,source in enumerate(sources))
         st.markdown(formatted_sources)
     st.session_state.messages.append({'role':'assistant', 'content':response})
