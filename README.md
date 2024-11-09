@@ -1,6 +1,13 @@
 # Streamlit Tutorial Repo
 
+<p align="center">
+  <img src="readme_media/main.png" alt="" width="45%" style="display:inline-block; margin: 5px;">
+  <img src="readme_media/sub.png" alt="Image 2" width="45%" style="display:inline-block; margin: 5px;">
+</p>
+
+
 ## Install Requirements
+This app was built using Python 3.9.5
 ```
 pip3 install -r requirements.txt
 ```
