@@ -7,7 +7,6 @@ st.title('PDF RAG Chatbot')
 def reset_st_session():
     if 'messages' not in st.session_state:
         st.session_state.messages = []
-    
     model = ChatOpenAI(model='gpt-4o-mini') 
     try:
         documents = load_PDF(path='documents')
