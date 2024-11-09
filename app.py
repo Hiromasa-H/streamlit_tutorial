@@ -1,7 +1,10 @@
 import streamlit as st
 from rag import *
-from langchain_openai import OpenAIEmbeddings
-    
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from dotenv import load_dotenv
+
+load_dotenv()
+
 st.title('PDF RAG Chatbot')        
 
 def reset_st_session():
