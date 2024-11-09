@@ -15,3 +15,6 @@ OPENAI_API_KEY = "YOUR OPEN AI API KEY HERE"
 ```
 streamlit run app.py
 ```
+
+## Upload PDF files 
+You can upload PDF files via the "manage files" tab in the application GUI, or by directly placing PDF files under the `/documents/` directory.
